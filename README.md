@@ -2,6 +2,57 @@
 
 Basic Express.js + Vercel example that serves html content, JSON data and simulates an api route.
 
+## Added: Free AI Photo Enhance API (Android-friendly)
+
+This project now includes a backend endpoint that proxies image enhancement through DeepAI's `waifu2x` model.
+
+- Route: `POST /api/enhance`
+- Content-Type: `application/json`
+- Body: `{ "image_url": "https://..." }`
+- Required env var: `DEEPAI_API_KEY`
+
+### Why this route exists
+
+For Android apps, keeping the API key on backend is safer than embedding it directly inside the APK.
+
+### Local environment
+
+Set the API key before running:
+
+```bash
+export DEEPAI_API_KEY=your_key_here
+```
+
+### cURL test
+
+```bash
+curl -X POST http://localhost:3000/api/enhance \
+  -H "Content-Type: application/json" \
+  -d '{"image_url":"https://images.unsplash.com/photo-1516117172878-fd2c41f4a759"}'
+```
+
+Expected response:
+
+```json
+{
+  "message": "Image enhanced successfully",
+  "output_url": "https://...",
+  "id": "..."
+}
+```
+
+### Flutter Android call example
+
+Use this in your Android Flutter app (send public image URL):
+
+```dart
+final response = await http.post(
+  Uri.parse('https://your-domain.com/api/enhance'),
+  headers: {'Content-Type': 'application/json'},
+  body: jsonEncode({'image_url': imageUrl}),
+);
+```
+
 ## How to Use
 
 You can choose from one of the following two methods to use this repository:
