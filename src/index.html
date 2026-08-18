@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Aviator Educational Demo</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:#000;color:#fff;font-family:Arial,Helvetica,sans-serif}
+body{padding:8px}.app{width:100%;max-width:1500px;margin:auto}
+.topbar{display:flex;justify-content:space-between;gap:12px;margin-bottom:12px}
+.top-box{height:50px;border:2px solid #292929;border-radius:8px;background:#020202;display:flex;align-items:center;padding:0 16px;font-size:22px;white-space:nowrap}
+.coin{width:29px;height:29px;border-radius:50%;margin-right:9px;background:radial-gradient(circle at 35% 30%,#fff6a0 0 8%,#ffd52c 9% 35%,#d99a00 36% 75%,#8d5c00 76%);border:2px solid #ffe77b}
+.clock{width:30px;height:30px;border:3px solid #eee;border-radius:50%;margin-left:12px;position:relative}
+.clock:before{content:"";position:absolute;width:2px;height:9px;background:#eee;left:50%;top:4px}.clock:after{content:"";position:absolute;width:8px;height:2px;background:#eee;left:50%;top:13px;transform:rotate(25deg);transform-origin:left}
+.game{height:500px;position:relative;overflow:hidden;border:2px solid #242424;border-radius:9px;background:#000}
+.yaxis{position:absolute;left:25px;top:24px;bottom:40px;width:2px;background:#ddd}.xaxis{position:absolute;left:25px;right:25px;bottom:40px;height:2px;background:#ddd}
+.ydots{position:absolute;left:21px;top:21px;bottom:38px;display:flex;flex-direction:column;justify-content:space-between}.xdots{position:absolute;left:25px;right:25px;bottom:35px;display:flex;justify-content:space-around}.ydots i,.xdots i{width:7px;height:7px;background:#eee;border-radius:50%}
+.curve{position:absolute;left:25px;bottom:40px;width:91%;height:210px;border-top:3px solid #d7d7d7;border-radius:50% 70% 0 0;transform:rotate(-7deg);transform-origin:left bottom}
+.point{position:absolute;width:12px;height:12px;border-radius:50%;background:#ff2020;box-shadow:0 0 18px #f00;display:none;right:16%;top:48%}
+.plane{position:absolute;width:105px;height:65px;left:7%;bottom:90px;z-index:5;filter:drop-shadow(0 0 10px rgba(255,0,0,.55));transition:left .12s linear,bottom .12s linear}
+.plane svg{width:100%;height:100%}
+.result{position:absolute;z-index:10;left:58%;top:45%;transform:translate(-50%,-50%);text-align:center;min-width:260px}
+.mult{font-size:80px;font-weight:900;letter-spacing:-3px;text-shadow:0 2px 8px #000}
+.flew{display:none;color:#ff2525;font-size:35px;font-weight:900;letter-spacing:1px;margin-bottom:6px;text-shadow:0 0 15px rgba(255,0,0,.65)}
+.status{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);color:#999;font-size:13px}
+.panels{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.panel{min-height:270px;border:2px solid #242424;border-radius:9px;background:#000;padding:15px 28px}
+.title{font-size:21px;border-bottom:2px solid #222;padding-bottom:7px;margin-bottom:22px}
+.betrow{display:flex;justify-content:space-between;align-items:center;gap:18px}.label{font-size:20px}.amount{font-size:31px;font-weight:bold;margin-left:8px}
+.betinput,.multbox{width:270px;height:52px;border:2px solid #555;border-radius:5px;background:#000;color:#fff;font-size:23px;padding:8px 12px;margin-top:10px}.multbox{display:flex;align-items:center;justify-content:center;font-weight:bold}
+.payout{width:270px;text-align:center;margin-top:9px;font-size:19px}
+.btn{width:360px;max-width:48%;height:105px;border-radius:17px;border:4px solid #087800;background:linear-gradient(#22e500,#08b900 48%,#079700);color:#fff;font-size:32px;font-weight:900;text-shadow:0 2px 3px #222;box-shadow:inset 0 2px 8px rgba(255,255,255,.35),0 0 0 5px #151515;cursor:pointer}.btn:disabled{opacity:.4;filter:grayscale(.4)}
+.controls{display:flex;gap:7px;margin-top:23px}.small{border:2px solid #383838;background:#020202;color:#fff;border-radius:5px;padding:7px 12px;font-size:18px}
+.history{display:flex;justify-content:center;gap:18px;margin-top:25px;flex-wrap:wrap}.hist{width:210px;height:60px;border-radius:4px;border:2px solid #555;display:flex;align-items:center;justify-content:center;font-size:29px;font-weight:bold;background:#292d31}.gold{background:#b28a00;border-color:#ffd400}.blue{background:#0064ae;border-color:#168dff}.red{background:#bd0000;border-color:#ff2525}.purple{background:#780060;border-color:#c500a2}
+@media(max-width:850px){body{padding:5px}.topbar{gap:6px}.top-box{font-size:14px;height:43px;padding:0 8px}.coin{width:23px;height:23px;margin-right:5px}.clock{width:24px;height:24px;margin-left:5px}.game{height:360px}.mult{font-size:50px}.flew{font-size:27px}.plane{width:75px;height:48px}.panels{grid-template-columns:1fr}.panel{padding:14px;min-height:250px}.betrow{gap:8px}.label{font-size:16px}.amount{font-size:25px}.btn{width:48%;max-width:none;height:78px;font-size:22px}.betinput,.multbox,.payout{width:48%}.history{gap:6px}.hist{width:100px;height:44px;font-size:19px}}
+</style>
+</head>
+<body>
+<div class="app">
+
+<div class="topbar">
+  <div class="top-box"><span class="coin"></span>Demo Balance <b id="balance">2,500</b></div>
+  <div class="top-box">Next Round in <b id="timer">3.00</b><span class="clock"></span></div>
+</div>
+
+<div class="game">
+  <div class="yaxis"></div><div class="xaxis"></div>
+  <div class="ydots"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="xdots"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="curve"></div><div class="point" id="point"></div>
+
+  <div class="plane" id="plane">
+    <svg viewBox="0 0 140 80" xmlns="http://www.w3.org/2000/svg">
+      <path d="M8 43C22 38 40 35 60 35L91 12H105L94 36H126L136 42L95 48L106 67H94L69 50L28 52L16 60H8L16 49Z" fill="#ed1717"/>
+      <path d="M53 36L76 19H93L84 37Z" fill="#ff3636"/>
+      <path d="M63 48L91 58H101L91 47Z" fill="#bd0808"/>
+      <path d="M50 35C56 25 67 23 75 29L79 35Z" fill="#191919"/>
+      <path d="M58 33C62 27 68 26 73 30L75 34Z" fill="#596d79"/>
+      <circle cx="102" cy="42" r="5" fill="#222"/>
+      <path d="M102 42L108 20H111L106 42Z" fill="#ddd"/>
+      <path d="M102 42L108 64H111L106 42Z" fill="#ddd"/>
+      <circle cx="39" cy="53" r="5" fill="#111"/><circle cx="39" cy="53" r="2" fill="#aaa"/>
+    </svg>
+  </div>
+
+  <div class="result">
+    <div class="flew" id="flew">FLEW AWAY</div>
+    <div class="mult" id="mult">1.00x</div>
+  </div>
+  <div class="status" id="status">Next round...</div>
+</div>
+
+<div class="panels">
+
+  <div class="panel">
+    <div class="title">BET</div>
+    <div class="betrow">
+      <div>
+        <div class="label">Bet Amount <span class="amount" id="betDisplay">100</span></div>
+        <input class="betinput" id="betInput" type="number" min="1" value="100">
+        <div class="multbox" id="betMult">1.00x</div>
+        <div class="payout">Payout <span id="payout">0.00</span></div>
+      </div>
+      <div>
+        <button class="btn" id="betBtn">BET</button>
+        <button class="btn" id="cashBtn" disabled>CASH OUT</button>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="small" onclick="changeBet(-10)">−10</button>
+      <button class="small" onclick="changeBet(10)">+10</button>
+      <button class="small" onclick="changeBet(-100)">−100</button>
+      <button class="small" onclick="maxBet()">MAX</button>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="title">WIM</div>
+    <div class="betrow">
+      <div>
+        <div class="label">Cash Out <span class="amount" id="cashValue">0.00</span></div>
+        <div class="multbox" id="wimMult">1.00x</div>
+      </div>
+      <button class="btn" id="cashBtn2" disabled>CASH OUT</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="history" id="history">
+  <div class="hist">1.12x</div>
+  <div class="hist gold">3.47x</div>
+  <div class="hist blue">5.21x</div>
+  <div class="hist red">1.56x</div>
+  <div class="hist purple">8.92x</div>
+</div>
+
+</div>
+
+<script>
+let balance=2500, running=false, hasBet=false, betAmount=100;
+let multiplier=1, crashPoint=2, roundStart=0, flightLoop=null, countdownLoop=null;
+
+const $=id=>document.getElementById(id);
+const balanceEl=$("balance"), timer=$("timer"), plane=$("plane"), mult=$("mult");
+const betMult=$("betMult"), wimMult=$("wimMult"), payout=$("payout"), cashValue=$("cashValue");
+const betInput=$("betInput"), betDisplay=$("betDisplay"), betBtn=$("betBtn");
+const cashBtn=$("cashBtn"), cashBtn2=$("cashBtn2"), status=$("status"), flew=$("flew"), point=$("point"), history=$("history");
+
+function updateBalance(){balanceEl.textContent=balance.toLocaleString();}
+function updateBet(){
+  let v=parseInt(betInput.value);
+  if(!Number.isFinite(v)||v<1)v=1;
+  betAmount=v; betInput.value=v; betDisplay.textContent=v;
+}
+function changeBet(v){betInput.value=Math.max(1,(parseInt(betInput.value)||100)+v);updateBet();}
+function maxBet(){betInput.value=Math.floor(balance);updateBet();}
+betInput.addEventListener("input",updateBet);
+
+function generateCrashPoint(){
+  return Number((1.20+Math.random()*5.80).toFixed(2));
+}
+
+function resetPlane(){
+  plane.style.left="7%";
+  plane.style.bottom="90px";
+}
+
+function setCashButtons(enabled){
+  cashBtn.disabled=!enabled;
+  cashBtn2.disabled=!enabled;
+}
+
+function startCountdown(){
+  running=false; hasBet=false;
+  betBtn.disabled=false;
+  setCashButtons(false);
+  resetPlane();
+  mult.textContent="1.00x"; flew.style.display="none"; point.style.display="none";
+  betMult.textContent="1.00x"; wimMult.textContent="1.00x"; payout.textContent="0.00"; cashValue.textContent="0.00";
+  status.textContent="Place your demo BET";
+  let seconds=3.00;
+  timer.textContent=seconds.toFixed(2);
+  clearInterval(countdownLoop);
+  countdownLoop=setInterval(()=>{
+    seconds=Math.max(0,seconds-0.05);
+    timer.textContent=seconds.toFixed(2);
+    if(seconds<=0){
+      clearInterval(countdownLoop);
+      startRound();
+    }
+  },50);
+}
+
+function startRound(){
+  running=true;
+  multiplier=1;
+  crashPoint=generateCrashPoint();
+  roundStart=performance.now();
+  timer.textContent="LIVE";
+  status.textContent=hasBet?"Plane flying...":"Plane flying — no bet";
+  clearInterval(flightLoop);
+  flightLoop=setInterval(updateFlight,80);
+  if(hasBet)setCashButtons(true);
+}
+
+function updateFlight(){
+  if(!running)return;
+  const elapsed=(performance.now()-roundStart)/1000;
+
+  /* deliberately slower flight */
+  multiplier=Number((1+elapsed*.20+elapsed*elapsed*.018).toFixed(2));
+
+  mult.textContent=multiplier.toFixed(2)+"x";
+  betMult.textContent=multiplier.toFixed(2)+"x";
+  wimMult.textContent=multiplier.toFixed(2)+"x";
+
+  if(hasBet){
+    const p=betAmount*multiplier;
+    payout.textContent=p.toFixed(2);
+    cashValue.textContent=p.toFixed(2);
+  }
+
+  plane.style.left=Math.min(88,7+elapsed*5.5)+"%";
+  plane.style.bottom=Math.min(240,90+elapsed*1.6)+"px";
+
+  if(multiplier>=crashPoint)crashRound();
+}
+
+function crashRound(){
+  running=false;
+  clearInterval(flightLoop); flightLoop=null;
+  multiplier=crashPoint;
+
+  mult.textContent=multiplier.toFixed(2)+"x";
+  betMult.textContent=multiplier.toFixed(2)+"x";
+  wimMult.textContent=multiplier.toFixed(2)+"x";
+
+  flew.style.display="block";
+  point.style.display="block";
+  status.textContent="Crashed at "+multiplier.toFixed(2)+"x";
+  setCashButtons(false);
+
+  /* Uncashed demo bet is lost for this simulation round */
+  hasBet=false;
+  betBtn.disabled=false;
+
+  addHistory(multiplier);
+
+  setTimeout(startCountdown,3000);
+}
+
+function addHistory(v){
+  const item=document.createElement("div");
+  item.className="hist";
+  if(v>=7)item.classList.add("purple");
+  else if(v>=5)item.classList.add("blue");
+  else if(v>=3)item.classList.add("gold");
+  else if(v<2)item.classList.add("red");
+  item.textContent=v.toFixed(2)+"x";
+  history.prepend(item);
+  while(history.children.length>8)history.removeChild(history.lastChild);
+}
+
+function placeBet(){
+  if(running||hasBet)return;
+  updateBet();
+  if(betAmount>balance){alert("Not enough demo coins.");return;}
+  balance-=betAmount;
+  updateBalance();
+  hasBet=true;
+  betBtn.disabled=true;
+  status.textContent="BET PLACED — waiting for round";
+}
+
+function cashOut(){
+  if(!running||!hasBet)return;
+  const win=betAmount*multiplier;
+  balance+=win;
+  updateBalance();
+  hasBet=false;
+  setCashButtons(false);
+  payout.textContent=win.toFixed(2);
+  cashValue.textContent=win.toFixed(2);
+  status.textContent="Demo cash out at "+multiplier.toFixed(2)+"x";
+}
+
+betBtn.addEventListener("click",placeBet);
+cashBtn.addEventListener("click",cashOut);
+cashBtn2.addEventListener("click",cashOut);
+
+updateBalance();
+updateBet();
+startCountdown();
+</script>
+</body>
+          </html>
